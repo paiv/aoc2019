@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+import os
+import requests
+import shutil
+import sys
+import time
+import yaml
+from datetime import datetime
+from pathlib import Path
+
+
+def trace(*args, **kwargs):
+    print(*args, file=sys.stderr, flush=True, **kwargs)
+
+
+def get(url, cookies=None, ua=None):
+    headers = dict()
+    if ua:
+        headers['user-agent'] = ua
+
+    delay = 1
+    while True:
+        try:
+            r = requests.get(url, headers=headers, cookies=cookies)
+            r.raise_for_status()
+            trace('ok', url)
+            return r.content
+        except Exception as e:
+            trace(e)
+            time.sleep(delay)
+            delay *= 1.44
+
+
+def prep(day=None, year=None):
+    now = datetime.utcnow()
+
+    if year is None:
+        year = now.year
+
+    if day is None:
+        day = (now - datetime(year, 12, 1)).days + 1
+    else:
+        day = int(day)
+
+    mydir = Path(__file__).resolve().parent
+    codes = mydir / 'code'
+    boildir = codes / '.boilerplate'
+    daydir = codes / f'{day:02}-1'
+    dayurl = f'http://adventofcode.com/{year}/day/{day}/input'
+
+    with open(mydir / '.prep') as fp:
+        env = yaml.safe_load(fp)
+        cookies = env.get('cookies', None)
+        user_agent = env.get('user_agent', None)
+
+
+    if daydir.is_dir():
+        print(daydir)
+        yn = input('Directory already exists. Overwrite? [N/y] ')
+        overwrite = yn.strip().lower() in ('y', 'yes')
+
+        if not overwrite:
+            return
+
+        shutil.rmtree(daydir)
+
+    shutil.copytree(boildir, daydir)
+    trace(daydir)
+
+    that_moment = datetime(year, 12, day, 5)
+    waiting = datetime.utcnow() < that_moment
+
+    while datetime.utcnow() < that_moment:
+        trace('.', end='')
+        time.sleep(1)
+
+    if waiting:
+        trace()
+
+    problem = get(dayurl, cookies=cookies, ua=user_agent)
+
+    with open(daydir / 'input.txt', 'wb') as fp:
+        fp.write(problem)
+
+
+if __name__ == '__main__':
+    import argparse
+
+    cli = argparse.ArgumentParser(description='Setup directory for a day\'s challenge')
+    cli.add_argument('day', type=int, nargs='?', help='Day number')
+    cli.add_argument('--year', type=int, default=None, help='Year')
+
+    args = cli.parse_args()
+
+    prep(year=args.year, day=args.day)

@@ -1,0 +1,7 @@
+matplotlib
+notebook
+numpy
+Pillow
+PyYaml
+requests
+-e paivlib
