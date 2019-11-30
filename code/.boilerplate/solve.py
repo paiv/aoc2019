@@ -2,10 +2,10 @@
 import paivlib as paiv
 
 
-def solve(s):
-    t = paiv.parse_ints(s)
-    paiv.trace(t)
-    return sum(map(sum, t))
+def solve(text):
+    xs = paiv.parse_ints(text)
+    paiv.trace(xs)
+    return sum(map(sum, xs))
 
 
 def test():

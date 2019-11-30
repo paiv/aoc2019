@@ -15,9 +15,9 @@ def trace(*args, **kwargs):
     if VERBOSE > 1: print(*args, file=sys.stderr, **kwargs)
 
 
-def read_files():
+def read_files(mode='r'):
     fn = sys.argv[1]
-    with open(fn) as fp:
+    with open(fn, mode=mode) as fp:
         return fp.read()
 
 
