@@ -1,5 +1,8 @@
+import fileinput
+import operator
 import sys
 import re
+from functools import reduce
 
 
 VERBOSE = 2 if __debug__ else 1
@@ -15,9 +18,8 @@ def trace(*args, **kwargs):
 
 
 def read_files(mode='r'):
-    fn = sys.argv[1]
-    with open(fn, mode=mode) as fp:
-        return fp.read()
+    with fileinput.input(mode=mode) as fp:
+        return reduce(operator.add, fp)
 
 
 def parse_ints(s, dtype=int):
