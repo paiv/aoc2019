@@ -1,4 +1,4 @@
-#!/usr/bin/env python -OO
+#!/usr/bin/env python
 import io
 import paivlib as paiv
 import time
@@ -10,11 +10,15 @@ def solve(text):
     mem = defaultdict(int)
     mem.update((i,x) for i,x in enumerate(data))
 
-    robot = Robot(trace=True)
+    robot = Robot(trace=False)
     robot.grid[robot.pos] = 1
     emu(mem, robot)
 
-    return str(robot)
+    s = str(robot).strip()
+    paiv.trace(s)
+
+    ocr = paiv.Ocr()
+    return ocr.scan(s)
 
 
 class Robot:

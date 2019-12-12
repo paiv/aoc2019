@@ -20,6 +20,9 @@ def solve(text, w=25, h=6):
     s = '\n'.join(''.join(image[i:i+w]) for i in range(0, frame, w))
     paiv.trace(s)
 
+    ocr = paiv.Ocr()
+    return ocr.scan(s)
+
 
 if __name__ == '__main__':
     print(solve(paiv.read_files()))
