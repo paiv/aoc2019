@@ -30,12 +30,4 @@ def parse_ints_flatten(s, dtype=int):
     return [x for n in xs for x in n]
 
 
-def l1_distance(a, b):
-    if isinstance(a, complex):
-        return abs(b.real - a.real) + abs(b.imag - a.imag)
-    elif isinstance(a, tuple):
-        return abs(b[0] - a[0]) + abs(b[1] - a[1])
-    raise Exception(f'{type(a)} {type(b)}')
 
-l1_dist = l1_distance
-manhattan_distance = l1_distance
