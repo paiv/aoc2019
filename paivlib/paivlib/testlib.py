@@ -41,5 +41,5 @@ def test_subject(subject):
     _TEST_SUBJECT = subject
 
 
-def test(input):
-    return Testable(_TEST_SUBJECT(input))
+def test(*args, **kwargs):
+    return Testable(_TEST_SUBJECT(*args, **kwargs))
