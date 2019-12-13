@@ -84,7 +84,7 @@ class IntcodeDisasm:
                 ip += 4
                 write_line(f'mov [{c}], {ref(ma, a)} < {ref(mb, b)}')
 
-            elif op == 8:
+            elif op == 8 and ip + 3 < len(mem):
                 a = mem[ip + 1]
                 b = mem[ip + 2]
                 c = mem[ip + 3]
@@ -107,6 +107,14 @@ class IntcodeDisasm:
                 skipped.append(mem[ip])
                 ip += 1
 
+        if skipped:
+            o = ip - len(skipped)
+            for i in range(0, len(skipped), 8):
+                s = ', '.join(map(str, skipped[i:i+8]))
+                write_line(f'{o:05}:', end=' ')
+                write_line(f'dw {s}')
+                o += 8
+            skipped = list()
 
         if hasattr(so, 'getvalue'):
             return so.getvalue()
