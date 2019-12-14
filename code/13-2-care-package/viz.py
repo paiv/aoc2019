@@ -2,7 +2,7 @@
 import io
 import paivlib as paiv
 import time
-from collections import defaultdict
+from collections import defaultdict, deque
 
 
 def solve(text):
@@ -10,19 +10,16 @@ def solve(text):
     mem = defaultdict(int)
     mem.update((i,x) for i,x in enumerate(data))
 
-    arcade = Arcade(trace=True, fps=30)
+    trace = deque()
+    arcade = Arcade(trace=trace)
     mem[0] = 2
-    emu(mem, arcade)
-
-    s = str(arcade).strip()
-    paiv.trace(s)
-    return arcade.score
+    yield from emu(mem, arcade, trace)
 
 
 class Arcade:
-    def __init__(self, trace=False, fps=2):
+    def __init__(self, trace=False, fps=None):
         self.trace = trace
-        self.fps = fps or 1
+        self.fps = fps
         self.grid = defaultdict(int)
         self.state = 0
         self.cur = 0
@@ -32,9 +29,9 @@ class Arcade:
 
     def __str__(self):
         grid = dict(self.grid)
-        chars = ' ##_*'
+        chars = '.%#_*'
         so = io.StringIO()
-        so.write(f'score: {self.score}\n')
+        # so.write(f'score: {self.score}\n')
         xs = [int(p.real) for p in grid] or [0]
         ys = [int(p.imag) for p in grid] or [0]
         for y in range(min(ys), max(ys) + 1):
@@ -43,7 +40,7 @@ class Arcade:
                 c = chars[grid.get(p, 0)]
                 so.write(c)
             so.write('\n')
-        return so.getvalue()
+        return so.getvalue().rstrip('\n')
 
     def read(self):
         a, b = self.paddle.real, self.ball.real
@@ -66,12 +63,13 @@ class Arcade:
                 elif value == 4:
                     self.ball = self.cur
             self.state = 0
-            if self.trace and self.score is not None:
-                print(self)
-                time.sleep(1/self.fps)
+            if self.trace is not None and self.score is not None:
+                self.trace.append(str(self))
+                if self.fps:
+                    time.sleep(1/self.fps)
 
 
-def emu(mem, arcade):
+def emu(mem, arcade, trace):
     ip = 0
     base = 0
 
@@ -117,6 +115,8 @@ def emu(mem, arcade):
             x = param(a, ma)
             arcade.write(x)
             ip += 2
+            while trace:
+                yield trace.popleft()
 
         elif op == 5:
             a = mem[ip + 1]
@@ -164,5 +164,25 @@ def emu(mem, arcade):
             raise Exception(f'op {op}')
 
 
+def viz(file, output=None, rate=1, scale=1):
+    text = file.read()
+
+    with paiv.Sprites(cwd='sprites') as sprites:
+        with paiv.VideoRenderer(output, rate=rate, scale=scale, sprites=sprites) as r:
+            sprites.remap('.%#_*', 'bg wall block paddle ball'.split())
+            frames = solve(text)
+            r.render(frames)
+
+
 if __name__ == '__main__':
-    print(solve(paiv.read_files()))
+    import argparse
+    import sys
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('file', nargs='?', default=sys.stdin, type=argparse.FileType('r'), help='Input file')
+    parser.add_argument('-r', '--rate', default=20, type=float, help='Frame rate')
+    parser.add_argument('-z', '--scale', default=1, type=int, help='Picture scale factor')
+    parser.add_argument('-o', '--output', help='Output file')
+    args = parser.parse_args()
+
+    viz(file=args.file, output=args.output, rate=args.rate, scale=args.scale)
