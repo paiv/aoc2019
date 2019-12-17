@@ -15,6 +15,8 @@ class IntcodeImage:
             if not x: break
             if x.isdigit():
                 s += x
+            elif not s and x == '-':
+                s += x
             elif s:
                 data.append(int(s))
                 s = ''

@@ -1,6 +1,6 @@
 import argparse
 import sys
-from . import IntcodeImage, IntcodeDisasm
+from . import IntcodeImage, IntcodeDisasm, DataDumper
 
 
 def assemble(args):
@@ -11,6 +11,12 @@ def disassemble(args):
     image = IntcodeImage.load(args.infile)
     dis = IntcodeDisasm()
     dis.process(image, output=args.outfile)
+
+
+def raw_dump(args):
+    dd = DataDumper(args.infile)
+    dd.seek(args.seek)
+    dd.dump(args.outfile)
 
 
 def cli():
@@ -32,6 +38,15 @@ def cli():
     dis.add_argument('-o', '--outfile', default=sys.stdout, type=argparse.FileType('w'),
         help='Write output to file')
     dis.set_defaults(handler=disassemble)
+
+    dis = subparsers.add_parser('raw', aliases=('dd',))
+    dis.add_argument('infile', nargs='?', default=sys.stdin, type=argparse.FileType('r'),
+        help='Input assembly')
+    dis.add_argument('-o', '--outfile', default=sys.stdout, type=argparse.FileType('w'),
+        help='Write output to file')
+    dis.add_argument('-s', '--seek', nargs='?', default=0, type=int,
+        help='Start at data offset')
+    dis.set_defaults(handler=raw_dump)
 
     parser.add_argument('-v', '--verbose', action='store_true',
         help='print details')
