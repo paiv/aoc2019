@@ -68,7 +68,6 @@ class Droid:
                 t = self.keyb.get(c)
             xto = self.pos + t
             self.plan = deque([xto])
-            paiv.trace(c, t, xto)
 
         else:
             if not self.plan:

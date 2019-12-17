@@ -133,8 +133,8 @@ class Droid:
             cur = pos
             while True:
                 moves = [-1j, -1, 1j, 1]
+                random.shuffle(moves)
                 while moves:
-                    random.shuffle(moves)
                     t = moves.pop()
                     xto = cur + t
                     if xto in visited: continue
