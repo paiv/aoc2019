@@ -3,7 +3,6 @@ import heapq
 import intcode as ic
 import io
 import paivlib as paiv
-import random
 import sys
 import time
 from collections import defaultdict, deque
@@ -116,28 +115,22 @@ class Droid:
                     heapq.heappush(fringe, (len(path) + 1 + w, p, path + (p,)))
 
     def _whats_the_plan(self, grid, pos):
-        while True:
-            visited = set()
-            path = deque()
-            cur = pos
-            while True:
-                moves = [-1j, -1, 1j, 1]
-                random.shuffle(moves)
-                while moves:
-                    t = moves.pop()
-                    xto = cur + t
-                    if xto in visited: continue
-                    x = grid.get(xto, 0)
-                    if x == 0:
-                        path.append(xto)
-                        return path
-                    elif x == Grid.SPACE:
-                        cur = xto
-                        path.append(cur)
-                        visited.add(cur)
-                        break
-                else:
-                    break
+        visited = set()
+        fringe = deque([(pos, tuple())])
+        moves = (-1j, -1, 1j, 1)
+        while fringe:
+            pos, path = fringe.popleft()
+
+            if pos in visited: continue
+            visited.add(pos)
+
+            if grid.get(pos, 0) == 0:
+                return deque(path)
+
+            for t in moves:
+                xto = pos + t
+                if grid.get(xto, 0) != Grid.WALL:
+                    fringe.append((xto, path + (xto,)))
 
 
 if __name__ == '__main__':

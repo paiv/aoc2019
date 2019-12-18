@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-import heapq
 import intcode as ic
 import io
 import paivlib as paiv
-import random
 import sys
 import time
 from collections import defaultdict, deque
@@ -104,50 +102,25 @@ class Droid:
             print(self)
             if self.fps: time.sleep(1/self.fps)
 
-    def find_path(self, sfrom, sto):
+    def _whats_the_plan(self, grid, pos):
         visited = set()
-        fringe = [(0, (sfrom.real, sfrom.imag), tuple())]
-        moves = (-1j, -1, 1j, 1)
-        grid = dict(self.grid)
+        fringe = deque([(pos, -1j, tuple())])
+        moves = (1j, 1, -1j, -1)
         while fringe:
-            _, (x, y), path = heapq.heappop(fringe)
-            pos = x + 1j * y
-            if pos == sto:
-                return path
+            pos, dir, path = fringe.popleft()
+
             if pos in visited: continue
             visited.add(pos)
 
-            for t in moves:
-                xto = pos + t
-                x = grid.get(xto)
-                if x == Grid.SPACE or x == Grid.TANK:
-                    w = paiv.l1_dist(xto, sto)
-                    p = (xto.real, xto.imag)
-                    heapq.heappush(fringe, (len(path) + 1 + w, p, path + (p,)))
+            if grid.get(pos, 0) == 0:
+                return deque(path)
 
-    def _whats_the_plan(self, grid, pos):
-        while True:
-            visited = set()
-            path = deque()
-            cur = pos
-            while True:
-                moves = [-1j, -1, 1j, 1]
-                random.shuffle(moves)
-                while moves:
-                    t = moves.pop()
-                    xto = cur + t
-                    if xto in visited: continue
-                    x = grid.get(xto, 0)
-                    if x == 0:
-                        path.append(xto)
-                        return path
-                    elif x == Grid.SPACE:
-                        cur = xto
-                        path.append(cur)
-                        visited.add(cur)
-                        break
-                else:
-                    break
+            for t in moves:
+                xdr = dir * t
+                xto = pos + xdr
+                if grid.get(xto, 0) != Grid.WALL:
+                    fringe.append((xto, xdr, path + (xto,)))
+
         self.exploring = False
 
 
