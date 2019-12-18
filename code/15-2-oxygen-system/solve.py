@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import heapq
+import intcode as ic
 import io
 import paivlib as paiv
 import random
@@ -12,19 +13,17 @@ def solve(text):
     if 0:
         symb = dict(zip(' .#OS', [0, Grid.SPACE, Grid.WALL, Grid.TANK, Grid.SPACE]))
         grid = dict((x + 1j*y, symb[c]) for y, row in enumerate(text.splitlines()) for x, c in enumerate(row))
-        return fill_oxigen(grid)
+        return fill_oxygen(grid)
 
-    data = paiv.parse_ints_flatten(text)
-    mem = defaultdict(int)
-    mem.update((i,x) for i,x in enumerate(data))
+    image = ic.IntcodeImage.loads(text)
+    vm = ic.IntcodeVM(image)
 
     droid = Droid(trace=True, fps=144)
-    emu(mem, droid)
+    vm.run(droid)
 
-    s = str(droid).rstrip()
-    paiv.trace(s)
+    paiv.trace(str(droid).rstrip())
 
-    ans = fill_oxigen(droid.grid)
+    ans = fill_oxygen(droid.grid)
     return ans
 
 
@@ -37,7 +36,7 @@ class Grid:
 
 
 class Droid:
-    def __init__(self, trace=True, fps=2):
+    def __init__(self, trace=False, fps=2):
         self.trace = trace
         self.fps = fps or 1
         self.grid = defaultdict(int)
@@ -62,7 +61,7 @@ class Droid:
             so.write('\n')
         return so.getvalue()
 
-    def is_running(self):
+    def is_active(self):
         return self.exploring
 
     moves = [1, 0, 2, 3, 0, 4]
@@ -152,7 +151,7 @@ class Droid:
         self.exploring = False
 
 
-def fill_oxigen(grid):
+def fill_oxygen(grid):
     o = next(k for k, c in grid.items() if c == Grid.TANK)
     fringe = [o]
     visited = {o}
@@ -173,101 +172,8 @@ def fill_oxigen(grid):
     return steps
 
 
-def emu(mem, droid):
-    ip = 0
-    base = 0
-
-    def param(a, ma):
-        return mem[base + a] if (ma == 2) else (mem[a] if ma == 0 else a)
-    def write(c, mc, x):
-        if mc == 2: c += base
-        mem[c] = x
-
-    while droid.is_running():
-        op = mem[ip]
-        ma = op // 100 % 10
-        mb = op // 1000 % 10
-        mc = op // 10000 % 10
-        op %= 100
-
-        if op == 1:
-            a = mem[ip + 1]
-            b = mem[ip + 2]
-            c = mem[ip + 3]
-            x = param(a, ma)
-            y = param(b, mb)
-            write(c, mc, x + y)
-            ip += 4
-
-        elif op == 2:
-            a = mem[ip + 1]
-            b = mem[ip + 2]
-            c = mem[ip + 3]
-            x = param(a, ma)
-            y = param(b, mb)
-            write(c, mc, x * y)
-            ip += 4
-
-        elif op == 3:
-            x = droid.read()
-            a = mem[ip + 1]
-            write(a, ma, x)
-            ip += 2
-
-        elif op == 4:
-            a = mem[ip + 1]
-            x = param(a, ma)
-            droid.write(x)
-            ip += 2
-
-        elif op == 5:
-            a = mem[ip + 1]
-            b = mem[ip + 2]
-            x = param(a, ma)
-            y = param(b, mb)
-            ip = y if (x != 0) else (ip + 3)
-
-        elif op == 6:
-            a = mem[ip + 1]
-            b = mem[ip + 2]
-            x = param(a, ma)
-            y = param(b, mb)
-            ip = y if (x == 0) else (ip + 3)
-
-        elif op == 7:
-            a = mem[ip + 1]
-            b = mem[ip + 2]
-            c = mem[ip + 3]
-            x = param(a, ma)
-            y = param(b, mb)
-            write(c, mc, 1 if (x < y) else 0)
-            ip += 4
-
-        elif op == 8:
-            a = mem[ip + 1]
-            b = mem[ip + 2]
-            c = mem[ip + 3]
-            x = param(a, ma)
-            y = param(b, mb)
-            write(c, mc, 1 if (x == y) else 0)
-            ip += 4
-
-        elif op == 9:
-            a = mem[ip + 1]
-            x = param(a, ma)
-            base += x
-            ip += 2
-
-        elif op == 99:
-            ip += 1
-            break
-
-        else:
-            raise Exception(f'op {op}')
-
-
 def test():
-    paiv.test_subject(fill_oxigen)
+    paiv.test_subject(fill_oxygen)
 
     s = """
  ##
