@@ -37,7 +37,12 @@ class Driver:
             if self.data.endswith('\n\n'):
                 paiv.trace(self.data)
                 self.state = 1
-                self._trace_path()
+
+                moves = self._trace_path()
+                cmd = self._program(moves)
+                cmd += '\nn\n'
+                self.output = deque(cmd)
+
         elif self.state == 1:
             if 0 < value < 128:
                 paiv.trace(chr(value), end='')
@@ -73,17 +78,47 @@ class Driver:
             else:
                 break
 
-        paiv.trace(actions)
-        actions = [reduce(operator.add, g) for _, g in itertools.groupby(actions, key=lambda x: isinstance(x, int))]
-        paiv.trace(actions)
+        return actions
 
-        cmd = """A,B,A,C,B,A,C,B,A,C
-L,12,L,12,L,6,L,6
-R,8,R,4,L,12
-L,12,L,6,R,12,R,8
-n
-"""
-        self.output = deque(cmd)
+    def _program(self, actions):
+        paiv.trace(','.join(map(str, actions)))
+        actions = [reduce(operator.add, g) for _, g in itertools.groupby(actions, key=lambda x: isinstance(x, int))]
+        paiv.trace(','.join(map(str, actions)))
+
+        for a in range(4, 13, 2):
+            A = actions[:a]
+            for b in range(4, 13, 2):
+                for c in range(4, 13, 2):
+                    B = C = None
+                    prog = [A]
+                    i = a
+                    while i < len(actions):
+                        if actions[i:i+a] == A:
+                            prog.append(A)
+                            i += a
+                        elif B is None:
+                            B = actions[i:i+b]
+                            prog.append(B)
+                            i += b
+                        elif actions[i:i+b] == B:
+                            prog.append(B)
+                            i += b
+                        elif C is None:
+                            C = actions[i:i+c]
+                            prog.append(C)
+                            i += c
+                        elif actions[i:i+c] == C:
+                            prog.append(C)
+                            i += c
+                        else:
+                            break
+                    else:
+                        if B is None or C is None: continue
+                        M = [('A' if x == A else 'B' if x == B else 'C') for x in prog]
+                        cmd = [','.join(map(str, xs)) for xs in [M, A, B, C]]
+                        paiv.trace(cmd)
+                        if all(len(s) <= 20 for s in cmd):
+                            return '\n'.join(cmd)
 
 
 if __name__ == '__main__':
