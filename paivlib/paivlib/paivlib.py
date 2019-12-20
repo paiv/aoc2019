@@ -13,8 +13,12 @@ def verbose(n):
     VERBOSE = n
 
 
+def print_stderr(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
+
 def trace(*args, **kwargs):
-    if VERBOSE > 1: print(*args, file=sys.stderr, **kwargs)
+    if VERBOSE > 1: print_stderr(*args, **kwargs)
 
 
 def read_files(mode='r'):
