@@ -32,7 +32,8 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'intcode=intcode.cli:cli'
+            'intcode=intcode.cli:cli',
+            'icd=intcode.icd:cli',
         ]
     },
 )

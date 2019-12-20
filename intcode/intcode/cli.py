@@ -1,6 +1,7 @@
 import argparse
+import importlib
 import sys
-from . import IntcodeImage, IntcodeDisasm, DataDumper
+from . import IntcodeImage, IntcodeDisasm, DataDumper, IntcodeDebugger
 
 
 def assemble(args):
@@ -9,14 +10,30 @@ def assemble(args):
 
 def disassemble(args):
     image = IntcodeImage.load(args.infile)
-    dis = IntcodeDisasm()
-    dis.process(image, output=args.outfile)
+    dis = IntcodeDisasm(output=args.outfile)
+    dis.process(image.program)
 
 
 def raw_dump(args):
     dd = DataDumper(args.infile)
     dd.seek(args.seek)
     dd.dump(args.outfile)
+
+
+def debugger(args):
+    image = IntcodeImage.load(args.infile)
+    ida = IntcodeDebugger()
+    if args.driver:
+        T = _load_class(args.driver)
+        ida.driver = T()
+    ida.load(image)
+    ida.interactive()
+
+
+def _load_class(spec):
+    m, n = spec.split(':')
+    p = importlib.load_module(m)
+    return getattr(p, n)
 
 
 def cli():
@@ -44,9 +61,16 @@ def cli():
         help='Input assembly')
     dis.add_argument('-o', '--outfile', default=sys.stdout, type=argparse.FileType('w'),
         help='Write output to file')
-    dis.add_argument('-s', '--seek', nargs='?', default=0, type=int,
+    dis.add_argument('-s', '--seek', default=0, type=int,
         help='Start at data offset')
     dis.set_defaults(handler=raw_dump)
+
+    ida = subparsers.add_parser('debugger', aliases=('ida', 'debug'))
+    ida.add_argument('infile', type=argparse.FileType('r'),
+        help='Input assembly')
+    ida.add_argument('-r', '--driver', default=None, type=str,
+        help='Driver class, module:name')
+    ida.set_defaults(handler=debugger)
 
     parser.add_argument('-v', '--verbose', action='store_true',
         help='print details')
