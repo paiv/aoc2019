@@ -1,4 +1,4 @@
-#!/usr/bin/env python -OO
+#!/usr/bin/env python
 import paivlib as paiv
 
 
