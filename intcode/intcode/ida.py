@@ -42,8 +42,8 @@ class IntcodeDebugger:
             pass
         signal.signal(signal.SIGINT, sig)
 
-    def user_print(self, text):
-        print(text, flush=True)
+    def user_print(self, text, *args, **kwargs):
+        print(text, *args, flush=True, **kwargs)
 
     def _dispatch_command(self, cmd):
         handler = self.commands.get(cmd.name)
@@ -268,4 +268,5 @@ class _IODriver:
             raise ValueError(repr(text))
 
     def write(self, value):
-        self.debugger.user_print(repr(value))
+        s = repr(value)
+        self.debugger.user_print(s)

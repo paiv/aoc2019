@@ -1,7 +1,8 @@
 import argparse
 import importlib
+import readline
 import sys
-from . import IntcodeImage, IntcodeDisasm, DataDumper, IntcodeDebugger
+from . import IntcodeImage, IntcodeVM, IntcodeDisasm, DataDumper, IntcodeDebugger
 
 
 def assemble(args):
@@ -30,10 +31,45 @@ def debugger(args):
     ida.interactive()
 
 
+def runner(args):
+    image = IntcodeImage.load(args.infile)
+    vm = IntcodeVM(image)
+    if args.driver:
+        T = _load_class(args.driver)
+        driver = T()
+    else:
+        driver = _ConsoleDriver(ascii=args.ascii)
+    vm.run(driver)
+
+
 def _load_class(spec):
     m, n = spec.split(':')
     p = importlib.load_module(m)
     return getattr(p, n)
+
+
+class _ConsoleDriver:
+    def __init__(self, ascii=False):
+        self.ascii = ascii
+
+    def is_active(self):
+        return True
+
+    def read(self):
+        while True:
+            text = input('> ')
+            if not text: continue
+            try:
+                return int(text, base=0)
+            except ValueError:
+                pass
+            print(f'! error parsing integer: {repr(text)}', file=sys.stderr)
+
+    def write(self, value):
+        if self.ascii and 8 < value < 128:
+            print(chr(value), end='', flush=True)
+        else:
+            print(repr(value))
 
 
 def cli():
@@ -71,6 +107,15 @@ def cli():
     ida.add_argument('-r', '--driver', default=None, type=str,
         help='Driver class, module:name')
     ida.set_defaults(handler=debugger)
+
+    run = subparsers.add_parser('run', aliases=('r', 'exec'))
+    run.add_argument('infile', type=argparse.FileType('r'),
+        help='Input assembly')
+    run.add_argument('-r', '--driver', default=None, type=str,
+        help='Driver class, module:name')
+    run.add_argument('-a', '--ascii', action='store_true',
+        help='ASCII I/O')
+    run.set_defaults(handler=runner)
 
     parser.add_argument('-v', '--verbose', action='store_true',
         help='print details')

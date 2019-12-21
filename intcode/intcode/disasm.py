@@ -1,4 +1,5 @@
 import io
+from .vm import IntcodeImage
 
 
 class IntcodeDisasm:
@@ -14,10 +15,8 @@ class IntcodeDisasm:
         if base is not None:
             self.base = base
 
-        mem = program
-        ip = self.ip
-        base = self.base
-        max_addr = max(mem)
+        image = IntcodeImage(dict(program), ip=self.ip, base=self.base)
+        max_addr = max(image.program)
         count = 0
 
         def write_line(*args, end='\n'):
@@ -25,30 +24,28 @@ class IntcodeDisasm:
 
         def analysis(op):
             if not self.analyze: return ''
-            s = op.analysis(mem, base=base)
+            s = op.analysis(image)
             return f'; {s}' if s else ''
 
-        while ip <= max_addr and (limit is None or count < limit):
-            op = _Operator.parse(mem, ip)
+        while image.ip <= max_addr and (limit is None or count < limit):
+            op = _Operator.parse(image)
 
             if op is None:
-                ip = next((i for i in sorted(mem) if i > ip), max_addr+1)
+                ip = image.ip
+                image.ip = next((i for i in sorted(image.program) if i > ip), max_addr+1)
                 continue
 
-            asm = f'{ip:04}:  {op.assembly()}'
+            asm = f'{image.ip:04}:  {op.assembly()}'
             lyz = analysis(op)
             if lyz:
                 asm = f'{asm:<40}  {lyz}'
             write_line(asm)
 
-            ip += op.size
+            op.exec(image)
             count += 1
 
-            if op.id == _BaseOp.id:
-                base += op.value1(mem, base)
-
-        self.ip = ip
-        self.base = base
+        self.ip = image.ip
+        self.base = image.base
 
 
 class _Operator:
@@ -59,7 +56,10 @@ class _Operator:
         cls.known_ops[op.id] = op
 
     @classmethod
-    def parse(cls, mem, ip):
+    def parse(cls, image):
+        mem = image.program
+        ip = image.ip
+
         op = mem.get(ip)
         if op is None: return
 
@@ -101,6 +101,13 @@ class _Operator:
             return (f'[base{a}]' if a < 0 else f'[base+{a}]') if (m == 2) else (f'[{a}]' if m == 0 else str(a))
         return ''
 
+    def analysis(self, image):
+        pass
+
+    def exec(self, image):
+        # print(type(self), image.ip, self.size)
+        image.ip += self.size
+
     def _format_param(self, mode, param):
         return (f'[base{param}]' if param < 0 else f'[base+{param}]') if (mode == 2) else (f'[{param}]' if mode == 0 else str(param))
 
@@ -116,50 +123,35 @@ class _Operator:
     def p3(self):
         return self._format_param(self.mode3, self.param3)
 
-    def analysis(self, mem, base=0):
-        pass
+    def read_value(self, image, mode, param, default=0):
+        mem = image.program
+        return mem.get(image.base + param, default) if (mode == 2) else (mem.get(param, default) if mode == 0 else param)
 
-    def read_value(self, mem, base, mode, param, default=0):
-        return mem.get(base + param, default) if (mode == 2) else (mem.get(param, default) if mode == 0 else param)
+    def ref_value(self, image, mode, param):
+        return f'[{image.base + param}]' if (mode == 2) else (f'[{param}]' if mode == 0 else f'{param}')
 
-    def ref_value(self, mem, base, mode, param):
-        return f'[{base + param}]' if (mode == 2) else (f'[{param}]' if mode == 0 else f'{param}')
+    def value1(self, image):
+        return self.read_value(image, self.mode1, self.param1)
 
-    def value1(self, mem, base=0):
-        return self.read_value(mem, base, self.mode1, self.param1)
+    def value2(self, image):
+        return self.read_value(image, self.mode2, self.param2)
 
-    def value2(self, mem, base=0):
-        return self.read_value(mem, base, self.mode2, self.param2)
+    def value3(self, image):
+        return self.read_value(image, self.mode3, self.param3)
 
-    def value3(self, mem, base=0):
-        return self.read_value(mem, base, self.mode3, self.param3)
+    def ref1(self, image):
+        return self.ref_value(image, self.mode1, self.param1)
 
-    def ref1(self, mem, base=0):
-        return self.ref_value(mem, base, self.mode1, self.param1)
+    def ref2(self, image):
+        return self.ref_value(image, self.mode2, self.param2)
 
-    def ref2(self, mem, base=0):
-        return self.ref_value(mem, base, self.mode2, self.param2)
-
-    def ref3(self, mem, base=0):
-        return self.ref_value(mem, base, self.mode3, self.param3)
+    def ref3(self, image):
+        return self.ref_value(image, self.mode3, self.param3)
 
 
 def _knownop(cls):
     _Operator.register_op(cls)
     return cls
-
-
-@_knownop
-class _BaseOp (_Operator):
-    id = 9
-    size = 2
-
-    def assembly(self):
-        return f'add base, {self.p1}'
-
-    def analysis(self, mem, base=0):
-        x = self.value1(mem, base)
-        return f'{base + x}'
 
 
 @_knownop
@@ -170,11 +162,17 @@ class _AddOp (_Operator):
     def assembly(self):
         return f'add {self.p3}, {self.p1}, {self.p2}'
 
-    def analysis(self, mem, base=0):
-        x = self.value1(mem, base)
-        y = self.value2(mem, base)
-        r = self.ref3(mem, base)
+    def analysis(self, image):
+        x = self.value1(image)
+        y = self.value2(image)
+        r = self.ref3(image)
         return f'{r} = {x + y} ({x} + {y})'
+
+    def exec(self, image):
+        # print(type(self), self.value1(image), self.value2(image), self.value3(image))
+        mem = image.program
+        mem[self.value3(image)] = self.value1(image) + self.value2(image)
+        super().exec(image)
 
 
 @_knownop
@@ -185,11 +183,16 @@ class _MulOp (_Operator):
     def assembly(self):
         return f'mul {self.p3}, {self.p1}, {self.p2}'
 
-    def analysis(self, mem, base=0):
-        x = self.value1(mem, base)
-        y = self.value2(mem, base)
-        r = self.ref3(mem, base)
+    def analysis(self, image):
+        x = self.value1(image)
+        y = self.value2(image)
+        r = self.ref3(image)
         return f'{r} = {x * y} ({x} * {y})'
+
+    def exec(self, image):
+        mem = image.program
+        mem[self.value3(image)] = self.value1(image) * self.value2(image)
+        super().exec(image)
 
 
 @_knownop
@@ -200,8 +203,8 @@ class _InOp (_Operator):
     def assembly(self):
         return f'in {self.p1}'
 
-    def analysis(self, mem, base=0):
-        r = self.ref1(mem, base)
+    def analysis(self, image):
+        r = self.ref1(image)
         return f'{r}'
 
 
@@ -213,8 +216,8 @@ class _OutOp (_Operator):
     def assembly(self):
         return f'out {self.p1}'
 
-    def analysis(self, mem, base=0):
-        x = self.value1(mem, base)
+    def analysis(self, image):
+        x = self.value1(image)
         return f'{x}'
 
 @_knownop
@@ -225,10 +228,10 @@ class _JnzOp (_Operator):
     def assembly(self):
         return f'jnz {self.p1}, {self.p2}'
 
-    def analysis(self, mem, base=0):
-        x = self.value1(mem, base)
-        y = self.value2(mem, base)
-        r = self.ref1(mem, base)
+    def analysis(self, image):
+        x = self.value1(image)
+        y = self.value2(image)
+        r = self.ref1(image)
         if x: return f'jmp {y}'
         else: return f'{r}: {x}'
 
@@ -240,10 +243,10 @@ class _JzOp (_Operator):
     def assembly(self):
         return f'jz {self.p1}, {self.p2}'
 
-    def analysis(self, mem, base=0):
-        x = self.value1(mem, base)
-        y = self.value2(mem, base)
-        r = self.ref1(mem, base)
+    def analysis(self, image):
+        x = self.value1(image)
+        y = self.value2(image)
+        r = self.ref1(image)
         if x == 0: return f'jmp {y}'
         else: return f'{r}: {x}'
 
@@ -256,12 +259,17 @@ class _LtOp (_Operator):
     def assembly(self):
         return f'mov {self.p3}, {self.p1} < {self.p2}'
 
-    def analysis(self, mem, base=0):
-        x = self.value1(mem, base)
-        y = self.value2(mem, base)
-        r = self.ref3(mem, base)
+    def analysis(self, image):
+        x = self.value1(image)
+        y = self.value2(image)
+        r = self.ref3(image)
         v = 1 if x < y else 0
         return f'{r} = {v} ({x} < {y})'
+
+    def exec(self, image):
+        mem = image.program
+        mem[self.value3(image)] = 1 if self.value1(image) < self.value2(image) else 0
+        super().exec(image)
 
 
 @_knownop
@@ -272,12 +280,34 @@ class _EqOp (_Operator):
     def assembly(self):
         return f'mov {self.p3}, {self.p1} == {self.p2}'
 
-    def analysis(self, mem, base=0):
-        x = self.value1(mem, base)
-        y = self.value2(mem, base)
-        r = self.ref3(mem, base)
+    def analysis(self, image):
+        x = self.value1(image)
+        y = self.value2(image)
+        r = self.ref3(image)
         v = 1 if x == y else 0
         return f'{r} = {v} ({x} == {y})'
+
+    def exec(self, image):
+        mem = image.program
+        mem[self.value3(image)] = 1 if self.value1(image) == self.value2(image) else 0
+        super().exec(image)
+
+
+@_knownop
+class _BaseOp (_Operator):
+    id = 9
+    size = 2
+
+    def assembly(self):
+        return f'add base, {self.p1}'
+
+    def analysis(self, image):
+        x = self.value1(image)
+        return f'{image.base + x}'
+
+    def exec(self, image):
+        image.base += self.value1(image)
+        super().exec(image)
 
 
 @_knownop
@@ -289,7 +319,7 @@ class _HaltOp (_Operator):
         return f'hlt'
 
 
-class _Data:
+class _Data (_Operator):
     id = -1
     size = 0
 
@@ -304,6 +334,3 @@ class _Data:
     def assembly(self):
         s = ', '.join(map(str, self.data))
         return f'dw {s}'
-
-    def analysis(self, mem, base=0):
-        pass
