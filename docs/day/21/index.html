@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>🚀Springdroid Adventure</title>
+
+<style>
+:root {--bg:#fff;--fg:#000}
+@media (prefers-color-scheme:dark) {:root {--bg:#202124;--fg:#f1f3f4;}}
+body, body * {background:var(--bg); color:var(--fg);}
+textarea {white-space:pre;word-wrap:normal;}
+a {text-decoration:none;} a:hover {text-decoration:underline;}
+.s {font-size: smaller;}
+.z {font-size: xxx-large;}
+.t * {font-family:monospace;}
+.em {font-weight:bolder;}
+.aa {max-width:80em;display:flex;flex-wrap:wrap;justify-content:space-around;}
+</style>
+</head>
+<body>
+
+<p>
+<span class="em">Springdroid Adventure</span> <br>
+<a class="s" href="https://adventofcode.com/2019/day/21">AoC 2019/day/21</a>
+</p>
+
+<div class="t">
+
+<div class="aa">
+    <div class="a0">
+        <p>SpringScript</p>
+        <p><textarea id="ss" rows="18" cols="10">
+NOT A J
+RUN
+</textarea></p>
+    </div>
+
+    <div class="a1">
+        <p>Ship hull</p>
+        <p><input type="text" id="sh" value="#####.###########"></p>
+        <p>Or pick a section:</p>
+        <select id="ix" size="8">
+            <option value=""></option>
+            <option value="#################">000 #################</option>
+            <option value="#########.#######">001 #########.#######</option>
+            <option value="########.########">002 ########.########</option>
+            <option value="########..#######">003 ########..#######</option>
+            <option value="#######.#########">004 #######.#########</option>
+            <option value="#######.#.#######">005 #######.#.#######</option>
+            <option value="#######..########">006 #######..########</option>
+            <option value="#######...#######">007 #######...#######</option>
+            <option value="######.##########">008 ######.##########</option>
+            <option value="######.##.#######">009 ######.##.#######</option>
+            <option value="######.#.########">010 ######.#.########</option>
+            <option value="######.#..#######">011 ######.#..#######</option>
+            <option value="######..#########">012 ######..#########</option>
+            <option value="######..#.#######">013 ######..#.#######</option>
+            <option value="######...########">014 ######...########</option>
+            <option value="#####.###########">015 #####.###########</option>
+            <option value="#####.###.#######">016 #####.###.#######</option>
+            <option value="#####.##.########">017 #####.##.########</option>
+            <option value="#####.##..#######">018 #####.##..#######</option>
+            <option value="#####.#.#########">019 #####.#.#########</option>
+            <option value="#####.#.#.#######">020 #####.#.#.#######</option>
+            <option value="#####.#..########">021 #####.#..########</option>
+            <option value="#####.#...#######">022 #####.#...#######</option>
+            <option value="#####..##########">023 #####..##########</option>
+            <option value="#####..##.#######">024 #####..##.#######</option>
+            <option value="#####..#.########">025 #####..#.########</option>
+            <option value="#####..#..#######">026 #####..#..#######</option>
+            <option value="#####...#########">027 #####...#########</option>
+            <option value="#####...#.#######">028 #####...#.#######</option>
+            <option value="####.############">029 ####.############</option>
+            <option value="####.####.#######">030 ####.####.#######</option>
+            <option value="####.###.########">031 ####.###.########</option>
+            <option value="####.###..#######">032 ####.###..#######</option>
+            <option value="####.##.#########">033 ####.##.#########</option>
+            <option value="####.##.#.#######">034 ####.##.#.#######</option>
+            <option value="####.##..########">035 ####.##..########</option>
+            <option value="####.##...#######">036 ####.##...#######</option>
+            <option value="####.#.##########">037 ####.#.##########</option>
+            <option value="####.#.##.#######">038 ####.#.##.#######</option>
+            <option value="####.#.#.########">039 ####.#.#.########</option>
+            <option value="####.#.#..#######">040 ####.#.#..#######</option>
+            <option value="####.#..#########">041 ####.#..#########</option>
+            <option value="####.#...########">042 ####.#...########</option>
+            <option value="####..###########">043 ####..###########</option>
+            <option value="####..###.#######">044 ####..###.#######</option>
+            <option value="####..##.########">045 ####..##.########</option>
+            <option value="####..##..#######">046 ####..##..#######</option>
+            <option value="####..#.#########">047 ####..#.#########</option>
+            <option value="####..#.#.#######">048 ####..#.#.#######</option>
+            <option value="####..#..########">049 ####..#..########</option>
+            <option value="####..#...#######">050 ####..#...#######</option>
+            <option value="####...##########">051 ####...##########</option>
+            <option value="####...##.#######">052 ####...##.#######</option>
+            <option value="####...#.########">053 ####...#.########</option>
+            <option value="####...#..#######">054 ####...#..#######</option>
+            <option value="###.#############">055 ###.#############</option>
+            <option value="###.#####.#######">056 ###.#####.#######</option>
+            <option value="###.####.########">057 ###.####.########</option>
+            <option value="###.####..#######">058 ###.####..#######</option>
+            <option value="###.###.#########">059 ###.###.#########</option>
+            <option value="###.###.#.#######">060 ###.###.#.#######</option>
+            <option value="###.###..########">061 ###.###..########</option>
+            <option value="###.###...#######">062 ###.###...#######</option>
+            <option value="###.##.##########">063 ###.##.##########</option>
+            <option value="###.##.##.#######">064 ###.##.##.#######</option>
+            <option value="###.##.#.########">065 ###.##.#.########</option>
+            <option value="###.##..#########">066 ###.##..#########</option>
+            <option value="###.##..#.#######">067 ###.##..#.#######</option>
+            <option value="###.##...########">068 ###.##...########</option>
+            <option value="###.#.###########">069 ###.#.###########</option>
+            <option value="###.#.###.#######">070 ###.#.###.#######</option>
+            <option value="###.#.##.########">071 ###.#.##.########</option>
+            <option value="###.#.##..#######">072 ###.#.##..#######</option>
+            <option value="###.#.#.#########">073 ###.#.#.#########</option>
+            <option value="###.#.#.#.#######">074 ###.#.#.#.#######</option>
+            <option value="###.#.#..########">075 ###.#.#..########</option>
+            <option value="###.#.#...#######">076 ###.#.#...#######</option>
+            <option value="###.#..##########">077 ###.#..##########</option>
+            <option value="###.#..##.#######">078 ###.#..##.#######</option>
+            <option value="###.#...#########">079 ###.#...#########</option>
+            <option value="###.#...#.#######">080 ###.#...#.#######</option>
+            <option value="###..############">081 ###..############</option>
+            <option value="###..####.#######">082 ###..####.#######</option>
+            <option value="###..###.########">083 ###..###.########</option>
+            <option value="###..###..#######">084 ###..###..#######</option>
+            <option value="###..##.#########">085 ###..##.#########</option>
+            <option value="###..##.#.#######">086 ###..##.#.#######</option>
+            <option value="###..##..########">087 ###..##..########</option>
+            <option value="###..##...#######">088 ###..##...#######</option>
+            <option value="###..#.##########">089 ###..#.##########</option>
+            <option value="###..#.#.########">090 ###..#.#.########</option>
+            <option value="###..#..#########">091 ###..#..#########</option>
+            <option value="###..#...########">092 ###..#...########</option>
+            <option value="###...###########">093 ###...###########</option>
+            <option value="###...###.#######">094 ###...###.#######</option>
+            <option value="###...##.########">095 ###...##.########</option>
+            <option value="###...##..#######">096 ###...##..#######</option>
+            <option value="###...#.#########">097 ###...#.#########</option>
+            <option value="###...#.#.#######">098 ###...#.#.#######</option>
+            <option value="###...#..########">099 ###...#..########</option>
+            <option value="###...#...#######">100 ###...#...#######</option>
+            <option value="##.##############">101 ##.##############</option>
+            <option value="##.######.#######">102 ##.######.#######</option>
+            <option value="##.#####.########">103 ##.#####.########</option>
+            <option value="##.#####..#######">104 ##.#####..#######</option>
+            <option value="##.####.#########">105 ##.####.#########</option>
+            <option value="##.####.#.#######">106 ##.####.#.#######</option>
+            <option value="##.####..########">107 ##.####..########</option>
+            <option value="##.####...#######">108 ##.####...#######</option>
+            <option value="##.###.##########">109 ##.###.##########</option>
+            <option value="##.###.##.#######">110 ##.###.##.#######</option>
+            <option value="##.###.#.########">111 ##.###.#.########</option>
+            <option value="##.###..#########">112 ##.###..#########</option>
+            <option value="##.###..#.#######">113 ##.###..#.#######</option>
+            <option value="##.###...########">114 ##.###...########</option>
+            <option value="##.##.###########">115 ##.##.###########</option>
+            <option value="##.##.###.#######">116 ##.##.###.#######</option>
+            <option value="##.##.#.#########">117 ##.##.#.#########</option>
+            <option value="##.##.#.#.#######">118 ##.##.#.#.#######</option>
+            <option value="##.##..##########">119 ##.##..##########</option>
+            <option value="##.##..##.#######">120 ##.##..##.#######</option>
+            <option value="##.##...#########">121 ##.##...#########</option>
+            <option value="##.##...#.#######">122 ##.##...#.#######</option>
+            <option value="##.#.############">123 ##.#.############</option>
+            <option value="##.#.####.#######">124 ##.#.####.#######</option>
+            <option value="##.#.###.########">125 ##.#.###.########</option>
+            <option value="##.#.###..#######">126 ##.#.###..#######</option>
+            <option value="##.#.##.#########">127 ##.#.##.#########</option>
+            <option value="##.#.##.#.#######">128 ##.#.##.#.#######</option>
+            <option value="##.#.##..########">129 ##.#.##..########</option>
+            <option value="##.#.##...#######">130 ##.#.##...#######</option>
+            <option value="##.#.#.##########">131 ##.#.#.##########</option>
+            <option value="##.#.#.#.########">132 ##.#.#.#.########</option>
+            <option value="##.#.#..#########">133 ##.#.#..#########</option>
+            <option value="##.#.#...########">134 ##.#.#...########</option>
+            <option value="##..#############">135 ##..#############</option>
+            <option value="##..#####.#######">136 ##..#####.#######</option>
+            <option value="##..####.########">137 ##..####.########</option>
+            <option value="##..####..#######">138 ##..####..#######</option>
+            <option value="##..###.#########">139 ##..###.#########</option>
+            <option value="##..###.#.#######">140 ##..###.#.#######</option>
+            <option value="##..###..########">141 ##..###..########</option>
+            <option value="##..###...#######">142 ##..###...#######</option>
+            <option value="##..##.##########">143 ##..##.##########</option>
+            <option value="##..##.##.#######">144 ##..##.##.#######</option>
+            <option value="##..##.#.########">145 ##..##.#.########</option>
+            <option value="##..##..#########">146 ##..##..#########</option>
+            <option value="##..##..#.#######">147 ##..##..#.#######</option>
+            <option value="##..##...########">148 ##..##...########</option>
+            <option value="##..#.###########">149 ##..#.###########</option>
+            <option value="##..#.###.#######">150 ##..#.###.#######</option>
+            <option value="##..#.#.#########">151 ##..#.#.#########</option>
+            <option value="##..#.#.#.#######">152 ##..#.#.#.#######</option>
+            <option value="##..#..##########">153 ##..#..##########</option>
+            <option value="##..#..##.#######">154 ##..#..##.#######</option>
+            <option value="##..#...#########">155 ##..#...#########</option>
+            <option value="##..#...#.#######">156 ##..#...#.#######</option>
+            <option value="##...############">157 ##...############</option>
+            <option value="##...####.#######">158 ##...####.#######</option>
+            <option value="##...###.########">159 ##...###.########</option>
+            <option value="##...###..#######">160 ##...###..#######</option>
+            <option value="##...##.#########">161 ##...##.#########</option>
+            <option value="##...##.#.#######">162 ##...##.#.#######</option>
+            <option value="##...##..########">163 ##...##..########</option>
+            <option value="##...##...#######">164 ##...##...#######</option>
+            <option value="##...#.##########">165 ##...#.##########</option>
+            <option value="##...#.#.########">166 ##...#.#.########</option>
+            <option value="##...#..#########">167 ##...#..#########</option>
+            <option value="##...#...########">168 ##...#...########</option>
+            <option value="#.###############">169 #.###############</option>
+            <option value="#.#######.#######">170 #.#######.#######</option>
+            <option value="#.######.########">171 #.######.########</option>
+            <option value="#.######..#######">172 #.######..#######</option>
+            <option value="#.#####.#########">173 #.#####.#########</option>
+            <option value="#.#####.#.#######">174 #.#####.#.#######</option>
+            <option value="#.#####..########">175 #.#####..########</option>
+            <option value="#.#####...#######">176 #.#####...#######</option>
+            <option value="#.####.##########">177 #.####.##########</option>
+            <option value="#.####.##.#######">178 #.####.##.#######</option>
+            <option value="#.####.#.########">179 #.####.#.########</option>
+            <option value="#.####..#########">180 #.####..#########</option>
+            <option value="#.####..#.#######">181 #.####..#.#######</option>
+            <option value="#.####...########">182 #.####...########</option>
+            <option value="#.###.###########">183 #.###.###########</option>
+            <option value="#.###.###.#######">184 #.###.###.#######</option>
+            <option value="#.###.#.#########">185 #.###.#.#########</option>
+            <option value="#.###.#.#.#######">186 #.###.#.#.#######</option>
+            <option value="#.###..##########">187 #.###..##########</option>
+            <option value="#.###..##.#######">188 #.###..##.#######</option>
+            <option value="#.###...#########">189 #.###...#########</option>
+            <option value="#.###...#.#######">190 #.###...#.#######</option>
+            <option value="#.#.#############">191 #.#.#############</option>
+            <option value="#.#.#####.#######">192 #.#.#####.#######</option>
+            <option value="#.#.####.########">193 #.#.####.########</option>
+            <option value="#.#.####..#######">194 #.#.####..#######</option>
+            <option value="#.#.###.#########">195 #.#.###.#########</option>
+            <option value="#.#.###.#.#######">196 #.#.###.#.#######</option>
+            <option value="#.#.###..########">197 #.#.###..########</option>
+            <option value="#.#.###...#######">198 #.#.###...#######</option>
+            <option value="#.#.##.##########">199 #.#.##.##########</option>
+            <option value="#.#.##.##.#######">200 #.#.##.##.#######</option>
+            <option value="#.#.##.#.########">201 #.#.##.#.########</option>
+            <option value="#.#.##..#########">202 #.#.##..#########</option>
+            <option value="#.#.##..#.#######">203 #.#.##..#.#######</option>
+            <option value="#.#.##...########">204 #.#.##...########</option>
+            <option value="#.#.#.###########">205 #.#.#.###########</option>
+            <option value="#.#.#.###.#######">206 #.#.#.###.#######</option>
+            <option value="#.#.#.#.#########">207 #.#.#.#.#########</option>
+            <option value="#.#.#.#.#.#######">208 #.#.#.#.#.#######</option>
+            <option value="#.#.#..##########">209 #.#.#..##########</option>
+            <option value="#.#.#..##.#######">210 #.#.#..##.#######</option>
+            <option value="#.#.#...#########">211 #.#.#...#########</option>
+            <option value="#.#.#...#.#######">212 #.#.#...#.#######</option>
+            <option value="#..##############">213 #..##############</option>
+            <option value="#..######.#######">214 #..######.#######</option>
+            <option value="#..#####.########">215 #..#####.########</option>
+            <option value="#..#####..#######">216 #..#####..#######</option>
+            <option value="#..####.#########">217 #..####.#########</option>
+            <option value="#..####.#.#######">218 #..####.#.#######</option>
+            <option value="#..####..########">219 #..####..########</option>
+            <option value="#..####...#######">220 #..####...#######</option>
+            <option value="#..###.##########">221 #..###.##########</option>
+            <option value="#..###.##.#######">222 #..###.##.#######</option>
+            <option value="#..###.#.########">223 #..###.#.########</option>
+            <option value="#..###..#########">224 #..###..#########</option>
+            <option value="#..###..#.#######">225 #..###..#.#######</option>
+            <option value="#..###...########">226 #..###...########</option>
+            <option value="#..##.###########">227 #..##.###########</option>
+            <option value="#..##.###.#######">228 #..##.###.#######</option>
+            <option value="#..##.#.#########">229 #..##.#.#########</option>
+            <option value="#..##.#.#.#######">230 #..##.#.#.#######</option>
+            <option value="#..##..##########">231 #..##..##########</option>
+            <option value="#..##..##.#######">232 #..##..##.#######</option>
+            <option value="#..##...#########">233 #..##...#########</option>
+            <option value="#..##...#.#######">234 #..##...#.#######</option>
+            <option value="#...#############">235 #...#############</option>
+            <option value="#...#####.#######">236 #...#####.#######</option>
+            <option value="#...####.########">237 #...####.########</option>
+            <option value="#...####..#######">238 #...####..#######</option>
+            <option value="#...###.#########">239 #...###.#########</option>
+            <option value="#...###.#.#######">240 #...###.#.#######</option>
+            <option value="#...###..########">241 #...###..########</option>
+            <option value="#...###...#######">242 #...###...#######</option>
+            <option value="#...##.##########">243 #...##.##########</option>
+            <option value="#...##.##.#######">244 #...##.##.#######</option>
+            <option value="#...##.#.########">245 #...##.#.########</option>
+            <option value="#...##..#########">246 #...##..#########</option>
+            <option value="#...##..#.#######">247 #...##..#.#######</option>
+            <option value="#...##...########">248 #...##...########</option>
+            <option value="#...#.###########">249 #...#.###########</option>
+            <option value="#...#.###.#######">250 #...#.###.#######</option>
+            <option value="#...#.#.#########">251 #...#.#.#########</option>
+            <option value="#...#.#.#.#######">252 #...#.#.#.#######</option>
+            <option value="#...#..##########">253 #...#..##########</option>
+            <option value="#...#..##.#######">254 #...#..##.#######</option>
+            <option value="#...#...#########">255 #...#...#########</option>
+            <option value="#...#...#.#######">256 #...#...#.#######</option>
+        </select>
+        <br>
+        <p>
+            <button id="al" type="button">Run them all</button> <span id="ax"></span>
+        </p>
+    </div>
+
+    <div class="a2">
+        <p>Investigate</p>
+        <p>
+            <button id="bs" type="button">Send droid</button>
+        </p>
+        <p><textarea id="mi" class="z" rows="3" cols="17" readonly="true">
+
+
+#####.###########
+</textarea>
+        </p>
+    </div>
+</div>
+
+</div>
+
+<script type="text/javascript">
+let geb = (s) => document.getElementById(s)
+async function sleep(t) {
+    await new Promise((r) => window.setTimeout(r, t * 1000))
+}
+async function dump(state, t=0.5) {
+    let [grid, [x, y]] = state
+    const w = grid.length
+    const h = 3
+    let s = [...Array(h)].map(_ => [...Array(w)].map(_ => ' '))
+    grid.split('').forEach((x, i) => s[h-1][i] = x)
+    if (x >= 0 && x < w && y >= 0 && y < h) s[h-y-1][x] = '@'
+    if (y == 0 && grid[x] === '.') {
+        [...'err'].forEach((x,i) => s[0][i] = x)
+    }
+    s = s.map(row => row.join('')).join('\n')
+    geb('mi').value = s
+    if (t > 0) await sleep(t)
+}
+function brain(prog, grid, pos) {
+    let r = new Map([...'ABCDEFGHI'].map((x,i) => [x, grid[pos+i+1] !== '.']))
+    r.set('J', false).set('T', false)
+    for (let l of prog) {
+        let [op, ...args] = l.trim().split(/\s+/)
+        if (op.length) {
+            if (op === 'RUN' || op === 'WALK')
+                return r.get('J')
+            let [a, b] = args
+            if (b !== 'J' && b !== 'T') throw ('write to ' + b)
+            if (op === 'NOT') r.set(b, !r.get(a))
+            else if (op === 'AND') r.set(b, r.get(a) && r.get(b))
+            else if (op === 'OR') r.set(b, r.get(a) || r.get(b))
+        }
+    }
+}
+let _p
+function spring(prog, grid, fps=2) {
+    prog = prog.trim().toUpperCase().split(/\n+/)
+        .map(s => s.replace(/\s*\#.*/, '').trim()).filter(s => s.length)
+    grid = grid.replace(/\s+/, '')
+    async function loop(state) {
+        let p = _p = new Object()
+        let [x, y, v] = state
+        ok = true
+        while (x < grid.length) {
+            if (p !== _p) return
+            await dump([grid, [x, y]], fps ? 1/fps : 0)
+            if (p !== _p) return
+            if (y == 0 && grid[x] === '.') {
+                ok = false
+                break
+            }
+            if (y == 0 && x < grid.length) {
+                v = brain(prog, grid, x) ? 1 : 0
+                y += v
+                x++
+            }
+            else if (y == 0) {
+                v = 0
+                x++
+            }
+            else {
+                y += v
+                if (y >= 2) v = -1
+                x++
+            }
+        }
+        if (p !== _p) return
+        await dump([grid, [x, y]], 0)
+        _p = undefined
+        return ok
+    }
+    return loop([0, 0, 0])
+}
+let _q
+async function rall() {
+    let q = _q = new Object()
+    let prog = geb('ss').value
+    let sh = geb('sh')
+    let ok = true
+    for (let o of geb('ix').options) {
+        if (q !== _q) return
+        let grid = o.value.trim()
+        if (grid.length) {
+            sh.value = grid
+            ok = await spring(prog, grid, 0)
+            if (!ok) {
+                o.selected = true
+                break
+            }
+        }
+    }
+    _q = undefined
+    geb('ax').textContent = ok ? 'ok' : 'err'
+}
+function send() {
+    spring(geb('ss').value, geb('sh').value)
+}
+function load() {
+    let g = geb('sh').value = geb('ix').value
+    if (!_p) {
+        dump([g, [-1,-1]], 0)
+    }
+}
+window.onload = () => {
+    geb('ix').onchange = load
+    geb('bs').onclick = send
+    geb('al').onclick = rall
+}
+</script>
+
+</body>
+</html>
