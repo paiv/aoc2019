@@ -10,15 +10,17 @@ def solve(text):
     mem = defaultdict(int)
     mem.update((i,x) for i,x in enumerate(data))
 
-    robot = Robot(trace=False)
+    robot = Robot(trace=False, fps=30)
     emu(mem, robot)
 
+    paiv.trace(robot)
     return len(robot.grid)
 
 
 class Robot:
-    def __init__(self, trace=False):
+    def __init__(self, trace=False, fps=2):
         self.trace = trace
+        self.fps = fps
         self.pos = 0j
         self.dir = -1j
         self.grid = defaultdict(int)
@@ -56,7 +58,7 @@ class Robot:
             self.state = 0
             if self.trace:
                 print(self)
-                time.sleep(0.5)
+                if self.fps: time.sleep(1 / self.fps)
 
     def is_running(self):
         return True
