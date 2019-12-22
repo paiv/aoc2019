@@ -5,3 +5,4 @@ Pillow
 PyYaml
 requests
 -e paivlib
+-e intcode
