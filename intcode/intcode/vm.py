@@ -56,7 +56,7 @@ class IntcodeDriver:
 
 class IntcodeVM:
     def __init__(self, image, driver=None):
-        self.image = image
+        self.image = image.copy()
         self.driver = driver
 
     def run(self, driver=None):
