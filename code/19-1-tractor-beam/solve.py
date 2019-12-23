@@ -26,6 +26,8 @@ def solve(text):
                 break
         offset = next((x for x in range(offset, 50) if grid[x,y]), offset)
 
+    paiv.trace(dump(grid))
+
     return sum(grid.values())
 
 
