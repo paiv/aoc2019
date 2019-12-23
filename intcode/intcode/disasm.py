@@ -48,6 +48,11 @@ class IntcodeDisasm:
         self.base = image.base
 
 
+class _Param:
+    ABSOLUTE, IMMEDIATE, RELATIVE = 0, 1, 2
+    A, I, R = ABSOLUTE, IMMEDIATE, RELATIVE
+
+
 class _Operator:
     known_ops = dict()
 
@@ -98,18 +103,17 @@ class _Operator:
 
     def assembly(self):
         def ref(m, a):
-            return (f'[base{a}]' if a < 0 else f'[base+{a}]') if (m == 2) else (f'[{a}]' if m == 0 else str(a))
+            return (f'[base{a}]' if a < 0 else f'[base+{a}]') if (m == _Param.R) else (f'[{a}]' if m == 0 else str(a))
         return ''
 
     def analysis(self, image):
         pass
 
     def exec(self, image):
-        # print(type(self), image.ip, self.size)
         image.ip += self.size
 
     def _format_param(self, mode, param):
-        return (f'[base{param}]' if param < 0 else f'[base+{param}]') if (mode == 2) else (f'[{param}]' if mode == 0 else str(param))
+        return (f'[base{param}]' if param < 0 else f'[base+{param}]') if (mode == _Param.R) else (f'[{param}]' if mode == _Param.A else str(param))
 
     @property
     def p1(self):
@@ -125,10 +129,12 @@ class _Operator:
 
     def read_value(self, image, mode, param, default=0):
         mem = image.program
-        return mem.get(image.base + param, default) if (mode == 2) else (mem.get(param, default) if mode == 0 else param)
+        return mem.get(image.base + param, default) if (mode == _Param.R) else (mem.get(param, default) if mode == _Param.A else param)
 
     def ref_value(self, image, mode, param):
-        return f'[{image.base + param}]' if (mode == 2) else (f'[{param}]' if mode == 0 else f'{param}')
+        if mode == 1:
+            raise Exception('referencing immediate value')
+        return (image.base + param) if (mode == _Param.R) else param
 
     def value1(self, image):
         return self.read_value(image, self.mode1, self.param1)
@@ -166,12 +172,11 @@ class _AddOp (_Operator):
         x = self.value1(image)
         y = self.value2(image)
         r = self.ref3(image)
-        return f'{r} = {x + y} ({x} + {y})'
+        return f'[{r}] = {x + y} ({x} + {y})'
 
     def exec(self, image):
-        # print(type(self), self.value1(image), self.value2(image), self.value3(image))
         mem = image.program
-        mem[self.value3(image)] = self.value1(image) + self.value2(image)
+        mem[self.ref3(image)] = self.value1(image) + self.value2(image)
         super().exec(image)
 
 
@@ -187,11 +192,11 @@ class _MulOp (_Operator):
         x = self.value1(image)
         y = self.value2(image)
         r = self.ref3(image)
-        return f'{r} = {x * y} ({x} * {y})'
+        return f'[{r}] = {x * y} ({x} * {y})'
 
     def exec(self, image):
         mem = image.program
-        mem[self.value3(image)] = self.value1(image) * self.value2(image)
+        mem[self.ref3(image)] = self.value1(image) * self.value2(image)
         super().exec(image)
 
 
@@ -205,7 +210,7 @@ class _InOp (_Operator):
 
     def analysis(self, image):
         r = self.ref1(image)
-        return f'{r}'
+        return f'[{r}]'
 
 
 @_knownop
@@ -231,9 +236,11 @@ class _JnzOp (_Operator):
     def analysis(self, image):
         x = self.value1(image)
         y = self.value2(image)
-        r = self.ref1(image)
-        if x: return f'jmp {y}'
-        else: return f'{r}: {x}'
+        if x:
+            return f'jmp {y}'
+        elif self.mode1 != _Param.I:
+            r = self.ref1(image)
+            return f'[{r}]: {x}'
 
 @_knownop
 class _JzOp (_Operator):
@@ -246,9 +253,11 @@ class _JzOp (_Operator):
     def analysis(self, image):
         x = self.value1(image)
         y = self.value2(image)
-        r = self.ref1(image)
-        if x == 0: return f'jmp {y}'
-        else: return f'{r}: {x}'
+        if not x:
+            return f'jmp {y}'
+        elif self.mode1 != _Param.I:
+            r = self.ref1(image)
+            return f'[{r}]: {x}'
 
 
 @_knownop
@@ -264,11 +273,11 @@ class _LtOp (_Operator):
         y = self.value2(image)
         r = self.ref3(image)
         v = 1 if x < y else 0
-        return f'{r} = {v} ({x} < {y})'
+        return f'[{r}] = {v} ({x} < {y})'
 
     def exec(self, image):
         mem = image.program
-        mem[self.value3(image)] = 1 if self.value1(image) < self.value2(image) else 0
+        mem[self.ref3(image)] = 1 if self.value1(image) < self.value2(image) else 0
         super().exec(image)
 
 
@@ -285,11 +294,11 @@ class _EqOp (_Operator):
         y = self.value2(image)
         r = self.ref3(image)
         v = 1 if x == y else 0
-        return f'{r} = {v} ({x} == {y})'
+        return f'[{r}] = {v} ({x} == {y})'
 
     def exec(self, image):
         mem = image.program
-        mem[self.value3(image)] = 1 if self.value1(image) == self.value2(image) else 0
+        mem[self.ref3(image)] = 1 if self.value1(image) == self.value2(image) else 0
         super().exec(image)
 
 

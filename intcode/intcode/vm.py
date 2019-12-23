@@ -55,28 +55,36 @@ class IntcodeDriver:
 
 
 class IntcodeVM:
-    def __init__(self, image):
+    def __init__(self, image, driver=None):
         self.image = image
+        self.driver = driver
 
     def run(self, driver=None):
+        self.limited_run(driver=driver, max_time=None)
+
+    def limited_run(self, driver=None, max_time=1):
         if driver is None:
-            driver = IntcodeDriver()
+            driver = self.driver or IntcodeDriver()
 
-        image = self.image.copy()
-        image.ip = self._emu(image.program, image.ip, driver)
-        self.image = image
+        time_used = self._emu(self.image, driver, time_limit=max_time)
+        return time_used
 
-    def _emu(self, mem, ip, driver):
-        base = 0
+    def _emu(self, image, driver, time_limit=None):
+        mem = image.program
+        ip = image.ip
+
+        time_used = 0
 
         def param(a, ma, default=0):
-            return mem.get(base + a, default) if (ma == 2) else (mem.get(a, default) if ma == 0 else a)
+            return mem.get(image.base + a, default) if (ma == 2) else (mem.get(a, default) if ma == 0 else a)
 
         def write(c, mc, x):
-            if mc == 2: c += base
+            if mc == 2: c += image.base
             mem[c] = x
 
-        while driver.is_active():
+        while driver.is_active() and (time_limit is None or time_used < time_limit):
+            time_used += 1
+
             op = mem[ip]
             ma = op // 100 % 10
             mb = op // 1000 % 10
@@ -148,7 +156,7 @@ class IntcodeVM:
             elif op == 9:
                 a = mem[ip + 1]
                 x = param(a, ma)
-                base += x
+                image.base += x
                 ip += 2
 
             elif op == 99:
@@ -156,9 +164,10 @@ class IntcodeVM:
                 break
 
             else:
-                raise Exception(f'op {op}')
+                raise Exception(f'opcode {op}')
 
-        return ip
+        image.ip = ip
+        return time_limit
 
 
 class IntcodeDebugVM:
@@ -312,7 +321,7 @@ class IntcodeDebugVM:
                 break
 
             else:
-                raise Exception(f'op {op}')
+                raise Exception(f'opcode {op}')
 
             if self.debugger and self.step_break:
                 self.step_break = False
