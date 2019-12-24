@@ -23,7 +23,6 @@ class IntcodeDisasm:
             print(*args, end=end, file=self.output)
 
         def analysis(op):
-            if not self.analyze: return ''
             s = op.analysis(image)
             return f'; {s}' if s else ''
 
@@ -36,12 +35,16 @@ class IntcodeDisasm:
                 continue
 
             asm = f'{image.ip:04}:  {op.assembly()}'
-            lyz = analysis(op)
-            if lyz:
-                asm = f'{asm:<40}  {lyz}'
-            write_line(asm)
 
-            op.exec(image)
+            if self.analyze:
+                lyz = analysis(op)
+                if lyz:
+                    asm = f'{asm:<40}  {lyz}'
+                op.exec(image)
+            else:
+                image.ip += op.size
+
+            write_line(asm)
             count += 1
 
         self.ip = image.ip
