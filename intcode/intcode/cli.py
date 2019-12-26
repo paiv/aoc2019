@@ -3,6 +3,7 @@ import importlib
 import readline
 import sys
 from . import IntcodeImage, IntcodeVM, IntcodeDisasm, DataDumper, IntcodeDebugger
+from collections import deque
 
 
 def assemble(args):
@@ -51,19 +52,29 @@ def _load_class(spec):
 class _ConsoleDriver:
     def __init__(self, ascii=False):
         self.ascii = ascii
+        self.output = None
 
     def is_active(self):
         return True
 
     def read(self):
+        if self.output:
+            return self.output.popleft()
+
         while True:
             text = input('> ')
             if not text: continue
-            try:
-                return int(text, base=0)
-            except ValueError:
-                pass
-            print(f'! error parsing integer: {repr(text)}', file=sys.stderr)
+
+            if self.ascii:
+                self.output = deque(map(ord, f'{text}\n'))
+                return self.output.popleft()
+
+            else:
+                try:
+                    return int(text, base=0)
+                except ValueError:
+                    pass
+                print(f'! error parsing integer: {repr(text)}', file=sys.stderr)
 
     def write(self, value):
         if self.ascii and 8 < value < 128:
