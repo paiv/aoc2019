@@ -1,6 +1,6 @@
 
-NAME = 'aoc-intcode'
-VERSION = '0.1.0'
+NAME = 'intcode'
+VERSION = '0.2.0'
 DESCRIPTION = 'AoC 2019 Intcode VM Assembler'
 AUTHOR = 'Pavel paiv Ivashkov'
 LICENSE = 'MIT'
